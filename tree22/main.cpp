@@ -96,7 +96,7 @@ class BST {
 
     void read() {
         freopen("input.txt", "r", stdin);
-        // freopen("output.txt", "w", stdout);
+        freopen("output.txt", "w", stdout);
 
         T x;
         while (std::cin >> x) {
