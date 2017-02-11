@@ -1,6 +1,12 @@
 #include <iostream>
 #include <memory>
 
+template<typename T, typename... Args>
+std::unique_ptr<T> make_unique(Args&&... args)
+{
+    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
+
 template <class T>
 class BST {
   public:
@@ -48,7 +54,7 @@ class BST {
         }
     };
 
-    BST(const T& data) : _root{std::make_unique<Node>(data)} {
+    BST(const T& data) : _root{make_unique<Node>(data)} {
     };
 
     BST() : _root(nullptr) {
@@ -58,7 +64,7 @@ class BST {
     //         false, else
     bool insert(const T& data) {
         if (_root == nullptr) {
-            _root = std::make_unique<Node>(data, nullptr);
+            _root = make_unique<Node>(data, nullptr);
             return true;
         }
 
@@ -68,9 +74,9 @@ class BST {
         }
 
         if (data < node->data) {
-            node->left = std::make_unique<Node>(data, node);
+            node->left = make_unique<Node>(data, node);
         } else {
-            node->right = std::make_unique<Node>(data, node);
+            node->right = make_unique<Node>(data, node);
         }
         return true;
     }
