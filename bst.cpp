@@ -2,8 +2,7 @@
 #include <memory>
 
 template<typename T, typename... Args>
-std::unique_ptr<T> make_unique(Args&&... args)
-{
+std::unique_ptr<T> make_unique(Args&&... args) {
     return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
 
@@ -93,13 +92,13 @@ class BST {
         }
 
         if (data < node_data) {
-            if (node->left.get() == nullptr) {
+            if (node->left == nullptr) {
                 return node;
             } else {
                 return _find(node->left.get(), data);
             }
         } else {
-            if (node->right.get() == nullptr) {
+            if (node->right == nullptr) {
                 return node;
             } else {
                 return _find(node->right.get(), data);
@@ -113,7 +112,7 @@ class BST {
 
     void _remove(Node* node) {
         Node* parent = node->parent;
-        if (node->left.get() == nullptr && node->right.get() == nullptr) {
+        if (node->left == nullptr && node->right == nullptr) {
             if (node == _root.get()) {
                 _root = nullptr;
             } else if (_is_left_son(node)) {
@@ -121,8 +120,8 @@ class BST {
             } else {
                 parent->right = nullptr;
             }
-        } else if (node->right.get() == nullptr) {
-            node->left.get()->parent = parent;
+        } else if (node->right == nullptr) {
+            node->left->parent = parent;
             if (node == _root.get()) {
                 _root = std::move(node->left);
             } else if (_is_left_son(node)) {
@@ -130,8 +129,8 @@ class BST {
             } else {
                 parent->right = (std::move(node->left));
             }
-        } else if (node->left.get() == nullptr) {
-            node->right.get()->parent = (parent);
+        } else if (node->left == nullptr) {
+            node->right->parent = (parent);
             if (node == _root.get()) {
                 _root = std::move(node->right);
             } else if (_is_left_son(node)) {
@@ -145,6 +144,9 @@ class BST {
             if (min_node == right) {
                 node->data = (right->data);
                 node->right = (std::move(right->right));
+                if (node->right) {
+                    node->right->parent = node;
+                }
             } else {
                 node->data = (min_node->data);
                 _remove(min_node);
@@ -152,7 +154,7 @@ class BST {
         }
     }
     Node* _find_min(Node * root) {
-        while (root->left.get() != nullptr) {
+        while (root->left != nullptr) {
             root = root->left.get();
         }
         return root;
