@@ -1,103 +1,84 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
-#include <fstream>
+#include <tuple>
+#include <random>
 
 template<typename T>
-class Heap {
-public:
-    Heap() {};
+class DSU {
+  public:
+    DSU() : parents_(1) {
+    };
 
-    T get_min() {
-        return data_.front();
+    void make_set(T elem) {
+        parents_.push_back(elem);
     }
 
-    void remove_min() {
-        std::swap(data_[0], data_[size() - 1]);
-        data_.pop_back();
-        sift_down(0);
-    }
-
-    void add(T elem) {
-        data_.push_back(elem);
-        sift_up(size() - 1);
-    }
-
-    bool empty() {
-        return (size() == 0);
-    }
-
-    size_t size() {
-        return data_.size();
-    }
-
-private:
-    std::vector<T> data_;
-
-    void sift_down(size_t i) {
-        size_t left = i + i + 1;
-        size_t right = i + i + 2;
-        size_t largest = i;
-        if (left < size() && data_[left] < data_[largest]) {
-            largest = left;
-        }
-        if (right < size() && data_[right] < data_[largest]) {
-            largest = right;
-        }
-        if (largest != i) {
-            std::swap(data_[largest], data_[i]);
-            sift_down(largest);
+    void union_sets(T first, T second) {
+        if (rd_() % 2) {
+            parents_[first] = second;
+        } else {
+            parents_[second] = first;
         }
     }
 
-    void sift_up(size_t i) {
-        size_t parent = (i - 1) / 2;
-        if (i != 0 && data_[parent] > data_[i]) {
-            std::swap(data_[parent], data_[i]);
-            sift_up(parent);
+    T find_set(T elem) {
+        if (parents_[elem] == elem) {
+            return elem;
         }
+        return parents_[elem] = find_set(parents_[elem]);
     }
+  private:
+    std::vector<size_t> parents_;
+    std::random_device rd_;
 };
 
+std::tuple<size_t, bool, size_t> read() {
+    char c;
+    std::cin >> c;
+    size_t x;
+    std::cin >> x;
+
+    std::string s;
+    std::cin >> s;
+
+    std::cin >> c;
+    size_t y;
+    std::cin >> y;
+    return std::make_tuple(x, s == "==", y);
+}
 
 int main() {
-    freopen("input.txt", "r", stdin);
-    freopen("output.txt", "w", stdout);
-
+    freopen("equal-not-equal.in", "r", stdin);
+    freopen("equal-not-equal.out", "w", stdout);
     std::ios_base::sync_with_stdio(0);
+    DSU<size_t> dsu;
+
     size_t n, m;
-    std::cin >> m >> n;
+    std::cin >> n >> m;
 
-    std::vector<std::vector<int>> data(m);
-    for (size_t i = 0; i < m; ++i) {
-        data[i].resize(n);
-        for (size_t j = 0; j < n; ++j) {
-            std::cin >> data[i][j];
-        }
-        std::reverse(data[i].begin(), data[i].end());
+    for (size_t i = 0; i < n; ++i) {
+        dsu.make_set(i + 1);
     }
 
-    Heap<std::pair<int, size_t>> heap;
-    for (size_t i = 0; i < m; ++i) {
-        heap.add(std::make_pair(data[i].back(), i));
-    }
-    std::vector<int> answer;
-    while (!heap.empty()) {
-        auto p = heap.get_min();
-        heap.remove_min();
+    std::vector<std::tuple<size_t, bool, size_t>> requests;
 
-        answer.push_back(p.first);
-        size_t index = p.second;
-        data[index].pop_back();
-        if (!data[index].empty()) {
-            heap.add(std::make_pair(data[index].back(), index));
+    for (size_t i = 0; i < m; ++i) {
+        auto p = read();
+        requests.push_back(p);
+        if (std::get<1>(p)) {
+            dsu.union_sets(dsu.find_set(std::get<0>(p)), dsu.find_set(std::get<2>(p)));
         }
     }
 
-    for (size_t i = 0; i < answer.size() - 1; ++i) {
-        std::cout << answer[i] << ' ';
+    for (auto p : requests) {
+        if (std::get<1>(p) == false) {
+            if (dsu.find_set(std::get<0>(p)) == dsu.find_set(std::get<2>(p))) {
+                std::cout << "No";
+                return 0;
+            }
+        }
     }
-    std::cout << answer.back() << '\n';
-
+    std::cout << "Yes";
     return 0;
 }
